@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <title>Ping Tracker</title>
   <style nonce="<%= nonce %>">
     body {
@@ -137,7 +138,7 @@
   <div class="container">
     <h1 class="title">Ping Tracker</h1>
     <div class="input-group">
-      <input type="text" id="message-ping" maxlength="100" placeholder="Enter message (up to 100 characters)">
+      <input type="text" id="message-ping" maxlength="<%= MAX_MESSAGE_LENGTH %>" placeholder="Enter message (up to <%= MAX_MESSAGE_LENGTH %> characters)">
       <button id="button-ping">Ping</button>
     </div>
    <div id="messages">
@@ -147,6 +148,7 @@
     const socket = io();
     const messagesDiv = document.getElementById('messages');
 
+    
     const fadeOutElement = (card) => {
       card.classList.add('fade-out');
       card.classList.remove('active');
@@ -178,8 +180,7 @@
     const card = createCard(message);
     const nodes = messagesDiv.querySelectorAll('.card:not(.fade-out)');
 
-    console.log(nodes.length);
-    if (nodes.length >= 10) {
+    if (nodes.length >= <%=MAX_MESSAGES %>) {
       const oldestMessage = nodes[nodes.length- 1];
       fadeOutElement(oldestMessage);
     }

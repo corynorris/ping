@@ -4,6 +4,7 @@ const socketIo = require('socket.io');
 const helmet = require('helmet');
 const cors = require('cors');
 const rateLimit = require('express-rate-limit');
+const crypto = require('crypto');
 
 const app = express();
 const server = http.createServer(app);
@@ -14,7 +15,10 @@ const limiter = rateLimit({
   max: 100, // limit each IP to 100 requests per windowMs
 });
 
-const crypto = require('crypto');
+let messages = [];
+const MAX_MESSAGE_LENGTH = 2048;
+const MAX_MESSAGES = 10;
+const port = process.env.PORT || 3000;
 
 
 app.use(helmet());
@@ -28,16 +32,14 @@ app.use((req, res, next) => {
     'Content-Security-Policy',
     `default-src 'self'; script-src 'self' 'nonce-${nonce}'; style-src 'self' 'nonce-${nonce}';`
     );
-  res.locals.nonce = nonce; // Make nonce available to your templates
+  res.locals.nonce = nonce; 
+  res.locals.MAX_MESSAGE_LENGTH = MAX_MESSAGE_LENGTH;
+  res.locals.MAX_MESSAGES = MAX_MESSAGES;
+  
   return next();
 });
 
 app.set('view engine', 'ejs');
-
-
-let messages = [];
-const MAX_MESSAGE_LENGTH = 2048;
-const MAX_MESSAGES = 10;
 
 function addMessage( method, message, ip, debug = {}) {
   const timestamp = new Date();
@@ -108,7 +110,6 @@ app.get('/', (req, res) => {
   res.render('index.ejs');
 });
 
-const port = process.env.PORT || 3000;
 
 server.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
