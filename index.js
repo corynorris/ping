@@ -59,7 +59,8 @@ app.post('/ping', (req, res) => {
   const message = JSON.stringify(req.body, null, 2);
 
   if (message) {
-    const ip = req.ip;
+    // Check if CF-Connecting-IP header is present
+    const ip = req.headers['cf-connecting-ip'] || req.ip;
 
     addMessage('POST', message, ip);
 
@@ -73,7 +74,8 @@ app.get('/ping', (req, res) => {
   const message = new URLSearchParams(req.query).toString()
   
   if (message) {
-    const ip = req.ip;
+    // Check if CF-Connecting-IP header is present
+    const ip = req.headers['cf-connecting-ip'] || req.ip;
 
     addMessage('GET', message, ip);
 
@@ -82,7 +84,6 @@ app.get('/ping', (req, res) => {
     res.sendStatus(400); 
   }
 });
-
 
 io.on('connection', (socket) => {
   console.log('A user connected');
@@ -94,7 +95,8 @@ io.on('connection', (socket) => {
   });
 
   socket.on('ping', (message) => {
-    const ip = socket.handshake.address;
+    // Check if CF-Connecting-IP header is present
+    const ip = socket.handshake.headers['cf-connecting-ip'] || socket.handshake.address;
   
     addMessage('SOCKET', message, ip);
   });
