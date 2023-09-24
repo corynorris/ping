@@ -7,24 +7,47 @@
   <style nonce="<%= nonce %>">
     body {
       font-family: Arial, sans-serif;
+      background-image: url('/background.svg');
+      background-repeat: no-repeat;
+      background-size: cover;
+      background-attachment: fixed;
+      background-position: center center;
+      overflow-y: hidden;
     }
-
+    
     .container {
       max-width: 600px;
       margin: 0 auto;
       padding: 20px;
     }
 
+    .title {
+      font-size: 24px;
+      color: #fff; /* White text color */
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5); /* Shadow effect */
+      margin: 0; /* Remove any default margin */
+    }
+
     .input-group {
       display: flex;
       align-items: center;
-      margin-bottom: 10px;
+      margin-bottom: 30px;
+      margin-top: 30px;
     }
 
     input[type="text"] {
       flex-grow: 1;
       padding: 8px;
       font-size: 16px;
+      border: none;
+      background-color: rgba(255, 255, 255, 0.9);
+      border-radius: 10px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    
+    input[type="text"]:focus{
+      outline-color:  #b38de5;
     }
 
     button {
@@ -32,88 +55,177 @@
       font-size: 16px;
       margin-left: 10px;
       cursor: pointer;
+      border: none;
+      background-color: #007BFF;
+      color: #fff;
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     }
 
-    #messages {
-      max-height: 300px;
-      overflow-y: auto;
-      border: 1px solid #ccc;
-      padding: 10px;
+    button:hover {
+      background-color: #0056b3;
     }
 
-    #messages div {
-      margin-bottom: 5px;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
+    h1 {
+      text-align: center;
     }
 
-    th, td {
-      border: 1px solid #ccc;
-      padding: 8px;
-      text-align: left;
+    .card {
+      border: none;
+      border-radius: 15px;
+      margin-bottom: 10px;
+      background-color: rgba(255, 255, 255, 0.9);
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      position: relative;
+      padding: 15px;
     }
+
+    .timestamp {
+      font-weight: bold;
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      color: #444;
+    }
+
+    .ip {
+      font-weight: bold;
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      color: #444;
+    }
+
+    .message {
+      font-family: 'Courier New', monospace;
+      white-space: pre-wrap;
+      font-size: 14px;
+      margin-top: 30px;
+    }
+
+    .card.fade-out {
+      opacity: 0;
+      transition: opacity 1s ease;
+    }
+
+    .card.fade-in {
+      opacity: 0;
+      transition: opacity 1s ease;
+    }
+
+    .card.fade-in.active {
+      opacity: 1;
+    }
+
+    .card.method-get {
+      background-color: rgba(173, 216, 230, 0.9); /* Light Blue for GET method */
+    }
+
+    .card.method-post {
+      background-color:  rgba(255, 255, 224, 0.9); /* Light Green for POST method */
+    }
+
+    .card.method-socket {
+      background-color: rgba(255, 218, 185, 0.9) /* Light Purple for SOCKET method */
+    }
+
+  
   </style>
   <script src="/socket.io/socket.io.js"></script>
 </head>
 <body>
   <div class="container">
-    <h1>Ping Tracker</h1>
+    <h1 class="title">Ping Tracker</h1>
     <div class="input-group">
-      <input type="text" id="message" maxlength="100" placeholder="Enter message (up to 100 characters)">
+      <input type="text" id="message-ping" maxlength="100" placeholder="Enter message (up to 100 characters)">
       <button id="button-ping">Ping</button>
     </div>
-    <table id="messageTable">
-      <thead>
-        <tr>
-          <th>Timestamp</th>
-          <th>IP Address</th>
-          <th>Message</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
+   <div id="messages">
   </div>
 
   <script nonce="<%= nonce %>">
     const socket = io();
+    const messagesDiv = document.getElementById('messages');
+
+    const fadeOutElement = (card) => {
+      card.classList.add('fade-out');
+      card.classList.remove('active');
+      card.classList.remove('fade-in' )
+
+      card.addEventListener('transitionend', () => {
+        messagesDiv.removeChild(card);
+      }, { once: true });
+    };
+
+    const fadeInElement = (card) => {
+      card.classList.add('fade-in');
+      setTimeout(() => {
+        card.classList.add('active');
+      }, 10);
+
+      messagesDiv.insertBefore(card, messagesDiv.firstChild);
+    };
+
 
     socket.on('init', (initMessages) => {
-      const messageTableBody = document.querySelector('#messageTable tbody');
-
       initMessages.forEach(message => {
-        const tableRow = document.createElement('tr');
-        tableRow.innerHTML = `
-          <td>${message.timestamp}</td>
-          <td>${message.ip}</td>
-          <td>${message.message}</td>
-        `;
-        messageTableBody.appendChild(tableRow);
+        const card = createCard(message);
+        messagesDiv.appendChild(card);
       });
     });
+    
+  socket.on('ping', (message) => {
+    const card = createCard(message);
+    const nodes = messagesDiv.querySelectorAll('.card:not(.fade-out)');
 
-    socket.on('ping', (message) => {
-      const messageTableBody = document.querySelector('#messageTable tbody');
-      const tableRow = document.createElement('tr');
-      tableRow.innerHTML = `
-        <td>${message.timestamp}</td>
-        <td>${message.ip}</td>
-        <td>${message.message}</td>
-      `;
-      messageTableBody.appendChild(tableRow);
-    });
+    console.log(nodes.length);
+    if (nodes.length >= 10) {
+      const oldestMessage = nodes[nodes.length- 1];
+      fadeOutElement(oldestMessage);
+    }
+
+    fadeInElement(card);
+  });
+
+  function createCard(data) {
+    const card = document.createElement('div');
+    card.classList.add(`method-${data.method.toLowerCase()}`);
+    card.classList.add('card');
+
+    const timestamp = document.createElement('div');
+    timestamp.classList.add('timestamp');
+    timestamp.textContent = new Date(data.timestamp).toLocaleString();
+    card.appendChild(timestamp);
+
+    const ip = document.createElement('div');
+    ip.classList.add('ip');
+    ip.textContent = data.ip;
+    card.appendChild(ip);
+
+    const messageContent = document.createElement('div');
+    messageContent.classList.add('message');
+    messageContent.textContent = data.message;
+    card.appendChild(messageContent);
+
+
+    return card;
+  }
+
 
     function ping() {
-      const message = document.getElementById('message').value;
+      const message = document.getElementById('message-ping').value;
       if (message.trim() !== '') {
         socket.emit('ping', message);
-        document.getElementById('message').value = ''; // Clear the input field after sending
+        // document.getElementById('message-ping').value = ''; // Clear the input field after sending
       }
     }
 
     document.getElementById('button-ping').addEventListener('click', ping);
+    document.getElementById('message-ping').onkeydown = function(e){
+        if(e.keyCode == 13){
+          ping();
+        }
+    };
   </script>
 </body>
 </html>
