@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ping Tracker</title>
+  <style nonce="<%= nonce %>">
+    body {
+      font-family: Arial, sans-serif;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .input-group {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    input[type="text"] {
+      flex-grow: 1;
+      padding: 8px;
+      font-size: 16px;
+    }
+
+    button {
+      padding: 8px 16px;
+      font-size: 16px;
+      margin-left: 10px;
+      cursor: pointer;
+    }
+
+    #messages {
+      max-height: 300px;
+      overflow-y: auto;
+      border: 1px solid #ccc;
+      padding: 10px;
+    }
+
+    #messages div {
+      margin-bottom: 5px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: left;
+    }
+  </style>
+  <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h1>Ping Tracker</h1>
+    <div class="input-group">
+      <input type="text" id="message" maxlength="100" placeholder="Enter message (up to 100 characters)">
+      <button id="button-ping">Ping</button>
+    </div>
+    <table id="messageTable">
+      <thead>
+        <tr>
+          <th>Timestamp</th>
+          <th>IP Address</th>
+          <th>Message</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <script nonce="<%= nonce %>">
+    const socket = io();
+
+    socket.on('init', (initMessages) => {
+      const messageTableBody = document.querySelector('#messageTable tbody');
+
+      initMessages.forEach(message => {
+        const tableRow = document.createElement('tr');
+        tableRow.innerHTML = `
+          <td>${message.timestamp}</td>
+          <td>${message.ip}</td>
+          <td>${message.message}</td>
+        `;
+        messageTableBody.appendChild(tableRow);
+      });
+    });
+
+    socket.on('ping', (message) => {
+      const messageTableBody = document.querySelector('#messageTable tbody');
+      const tableRow = document.createElement('tr');
+      tableRow.innerHTML = `
+        <td>${message.timestamp}</td>
+        <td>${message.ip}</td>
+        <td>${message.message}</td>
+      `;
+      messageTableBody.appendChild(tableRow);
+    });
+
+    function ping() {
+      const message = document.getElementById('message').value;
+      if (message.trim() !== '') {
+        socket.emit('ping', message);
+        document.getElementById('message').value = ''; // Clear the input field after sending
+      }
+    }
+
+    document.getElementById('button-ping').addEventListener('click', ping);
+  </script>
+</body>
+</html>
+
+
+
+
+
