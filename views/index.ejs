@@ -216,7 +216,7 @@
       const message = document.getElementById('message-ping').value;
       if (message.trim() !== '') {
         socket.emit('ping', message);
-        // document.getElementById('message-ping').value = ''; // Clear the input field after sending
+        document.getElementById('message-ping').value = ''; // Clear the input field after sending
       }
     }
 
