@@ -5,6 +5,7 @@ const helmet = require('helmet');
 const cors = require('cors');
 const rateLimit = require('express-rate-limit');
 const crypto = require('crypto');
+const cron = require('node-cron');
 
 const app = express();
 const server = http.createServer(app);
@@ -18,6 +19,7 @@ const limiter = rateLimit({
 let messages = [];
 const MAX_MESSAGE_LENGTH = 2048;
 const MAX_MESSAGES = 10;
+const MAX_MESSAGE_AGE = 1000 * 60 * 60 * 4; // 4 hours
 const port = process.env.PORT || 3000;
 
 
@@ -85,6 +87,14 @@ app.get('/ping', (req, res) => {
   } else {
     res.sendStatus(400); 
   }
+});
+
+cron.schedule('0 * * * *', () => () => {
+  const now = new Date();
+
+  messages = messages.filter((message) => {
+    return (now - message.timestamp) < MAX_MESSAGE_AGE;
+  });
 });
 
 io.on('connection', (socket) => {
