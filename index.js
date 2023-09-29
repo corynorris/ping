@@ -89,7 +89,7 @@ app.get('/ping', (req, res) => {
   }
 });
 
-cron.schedule('0 0 */4 * * *', () => {
+cron.schedule('0 0 */1 * * *', () => {
   const now = new Date();
 
   messages = messages.filter((message) => {
