@@ -89,7 +89,7 @@ app.get('/ping', (req, res) => {
   }
 });
 
-cron.schedule('0 0 */4 * * *', () => () => {
+cron.schedule('0 0 */4 * * *', () => {
   const now = new Date();
 
   messages = messages.filter((message) => {
@@ -107,7 +107,7 @@ io.on('connection', (socket) => {
   });
 
   socket.on('ping', (message) => {
-    // Check if CF-Connecting-IP header is present
+
     const ip = socket.handshake.headers['cf-connecting-ip'] || socket.handshake.address;
   
     addMessage('SOCKET', message, ip);
