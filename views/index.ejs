@@ -188,6 +188,40 @@
     fadeInElement(card);
   });
 
+
+  function updateTimestamps() {
+    const cards = document.querySelectorAll('.card');
+
+    cards.forEach((card) => {
+      const timestampElement = card.querySelector('.timestamp');
+      const timestampDate = new Date(timestampElement.getAttribute('data-timestamp'));
+      timestampElement.textContent = getFriendlyTimestamp(timestampDate);
+      timestampElement.setAttribute('title', timestampDate.toLocaleString());
+    });
+  }
+
+  function getFriendlyTimestamp(timestamp) {
+    const now = new Date();
+    const diffInSeconds = Math.floor((now - timestamp) / 1000);
+
+    const rtf = new Intl.RelativeTimeFormat('en', { numeric: 'auto' });
+
+    if (diffInSeconds < 10) {
+      return 'Just now';
+    } else if (diffInSeconds < 60) {
+      return 'A few seconds ago';
+    } else if (diffInSeconds < 3600) {
+      const diffInMinutes = Math.floor(diffInSeconds / 60);
+      return rtf.format(-diffInMinutes, 'minute');
+    } else if (diffInSeconds < 86400) {
+      const diffInHours = Math.floor(diffInSeconds / 3600);
+      return rtf.format(-diffInHours, 'hour');
+    } else {
+      const diffInDays = Math.floor(diffInSeconds / 86400);
+      return rtf.format(-diffInDays, 'day');
+    }
+  }
+
   function createCard(data) {
     const card = document.createElement('div');
     card.classList.add(`method-${data.method.toLowerCase()}`);
@@ -195,7 +229,10 @@
 
     const timestamp = document.createElement('div');
     timestamp.classList.add('timestamp');
-    timestamp.textContent = new Date(data.timestamp).toLocaleString();
+    const timestampDate = new Date(data.timestamp);
+    timestamp.textContent = getFriendlyTimestamp(timestampDate);
+    timestamp.setAttribute('title', timestampDate.toLocaleString()); 
+    timestamp.setAttribute('data-timestamp', data.timestamp);
     card.appendChild(timestamp);
 
     const ip = document.createElement('div');
@@ -207,7 +244,6 @@
     messageContent.classList.add('message');
     messageContent.textContent = data.message;
     card.appendChild(messageContent);
-
 
     return card;
   }
@@ -227,6 +263,9 @@
           ping();
         }
     };
+
+    setInterval(updateTimestamps, 5000);
+
   </script>
 </body>
 </html>
