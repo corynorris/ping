@@ -21,6 +21,7 @@ The Ping Tracker web app is a simple application that allows users to send messa
 ## Usage
 
 1. **Sending Messages:**
+
    - **POST Request:** Send a message using a POST request to `http://localhost:3000/ping`.
    - **GET Request:** Send a message using a GET request to `http://localhost:3000/ping?message=YOUR_MESSAGE`.
    - **WebSocket:** Connect to the WebSocket at `http://localhost:3000` and use the "ping" event to send messages.
@@ -36,3 +37,34 @@ The Ping Tracker web app is a simple application that allows users to send messa
 ## Additional Notes
 
 - If you are using a reverse proxy (e.g., Cloudflare), ensure to correctly retrieve the client's IP address as specified in the code.
+
+## Deployment
+
+### Docker
+
+1. **Build the Docker image:**
+
+   ```bash
+   docker build -t corynorris/ping:latest .
+   ```
+
+2. **Push to registry:**
+   ```bash
+   docker push corynorris/ping:latest
+   ```
+
+### Kubernetes
+
+1. **Apply the Kubernetes manifests:**
+
+   ```bash
+   kubectl apply -f k8s/
+   ```
+
+2. **Verify deployment:**
+   ```bash
+   kubectl get pods -l app=ping
+   kubectl get ingress ping-ingress
+   ```
+
+The app will be available at `https://ping.corynorris.me`
